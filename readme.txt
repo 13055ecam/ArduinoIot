@@ -1,0 +1,4 @@
+VIN - VIN
+GND - GND
+3 - D3
+2 - D2
