@@ -5,16 +5,22 @@
   Licence : MIT
 */
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
 #include <PubSubClient.h>
 #include "DHT.h"          // Librairie des capteurs DHT
 
-#define wifi_ssid "WiFi-2.4-8353"
-#define wifi_password "ACBE04C1C6"
+#define ssid "ESP8266 WIFIKEY"
+#define password ""
+IPAddress apIP(192, 168, 5, 1);
+IPAddress gateway(192,168,4,9);
+IPAddress subnet(255,255,255,0);
 
-const char WiFiAPPSK[] = "sparkfun";
 
 
-#define mqtt_server "192.168.1.44"
+//const char WiFiAPPSK[] = "sparkfun";
+
+
+#define mqtt_server "192.168.5.101"
 #define mqtt_user "USERNAME"  //s'il a été configuré sur Mosquitto
 #define mqtt_password "PASSWORD" //idem
 
@@ -57,9 +63,10 @@ void setup_wifi() {
   delay(10);
   Serial.println();
   Serial.print("Connexion a ");
-  Serial.println(wifi_ssid);
-
-  WiFi.begin(wifi_ssid, wifi_password);
+  //Serial.println(wifi_ssid);
+ WiFi.mode(WIFI_AP_STA);   //This line hides the viewing of ESP as wifi network
+    WiFi.softAPConfig(apIP,gateway, subnet);   // subnet FF FF FF 00  
+  WiFi.softAP(ssid,password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -68,8 +75,10 @@ void setup_wifi() {
 
   Serial.println("");
   Serial.println("Connexion WiFi etablie ");
-  Serial.print("=> Addresse IP : ");
-  Serial.print(WiFi.localIP());
+ IPAddress myIP = WiFi.softAPIP(); //Get IP address
+  Serial.print("HotSpt IP:");
+  Serial.println(myIP);
+
 }
 
 //Reconnexion
@@ -143,7 +152,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   
   String msgString = String(message_buff);
   if ( debug ) {
-    Serial.println("Payload: " + msgString);
+    Serial.println("payload: " + msgString);
   }
   
   if ( msgString == "ON" ) {
@@ -153,25 +162,4 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 }
 
-void setupWiFi()
-{
-  WiFi.mode(WIFI_AP);
-
-  // Do a little work to get a unique-ish name. Append the
-  // last two bytes of the MAC (HEX'd) to "Thing-":
-  uint8_t mac[WL_MAC_ADDR_LENGTH];
-  WiFi.softAPmacAddress(mac);
-  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-  macID.toUpperCase();
-  String AP_NameString = "ESP8266 Thing " + macID;
-
-  char AP_NameChar[AP_NameString.length() + 1];
-  memset(AP_NameChar, 0, AP_NameString.length() + 1);
-
-  for (int i=0; i<AP_NameString.length(); i++)
-    AP_NameChar[i] = AP_NameString.charAt(i);
-
-  WiFi.softAP(AP_NameChar, WiFiAPPSK);
-}
 
