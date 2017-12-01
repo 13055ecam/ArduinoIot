@@ -1,0 +1,14 @@
+sources : 
+
+- https://projetsdiy.fr/esp8266-dht22-mqtt-projet-objet-connecte/ : DH11+ESP+Mqtt+application web domotique
+
+- https://projetsdiy.fr/home-assistant-serveur-domotique-raspberry-pi/ : application domotique
+
+- https://learn.adafruit.com/adafruit-huzzah-esp8266-breakout/overview : esp8266
+
+- https://learn.adafruit.com/dht/using-a-dhtxx-sensor : DH11
+
+- https://learn.sparkfun.com/tutorials/esp8266-thing-hookup-guide/example-sketch-ap-web-server : HTTP+ESP+création clef wifi 
+
+- http://randomnerdtutorials.com/esp8266-dht11dht22-temperature-and-humidity-web-server-with-arduino-ide/ : HTTP+ESP+ Capteur humidité 
+
