@@ -3,16 +3,19 @@
 #include "DHT.h"
 
 #define DHTTYPE DHT11   // DHT 11
+#define ssid "ESP8266 WIFIKEY"
+#define password ""
 
+IPAddress apIP(192, 168, 5, 1);
+IPAddress gateway(192,168,4,9);
+IPAddress subnet(255,255,255,0);
 int led = 12;
-const char WiFiAPPSK[] = "sparkfun";
-
 
 // Web Server on port 80
 WiFiServer server(80);
 
 // DHT Sensor
-const int DHTPin = 5;
+const int DHTPin = 2;
 // Initialize DHT sensor.
 DHT dht(DHTPin, DHTTYPE);
 
@@ -25,23 +28,23 @@ static char humidityTemp[7];
 void setup()
 {
   setupWiFi();
-  Serial.begin(115200);
+  Serial.begin(9600);
   delay(10);
   pinMode(led, OUTPUT);
   dht.begin();
   
   // Starting the web server
   server.begin();
-  Serial.println("Web server running. Waiting for the ESP IP...");
-  delay(10000);
   
-  // Printing the ESP IP address
-  Serial.println(WiFi.localIP());
+  Serial.println("");
+  Serial.println("Connexion WiFi etablie ");
+ IPAddress myIP = WiFi.softAPIP(); //Get IP address
+  Serial.print("HotSpt IP:");
+  Serial.println(myIP);
 }
 
 // runs over and over again
 void loop() {
-    Serial.println(WiFi.localIP());
   // Listenning for new clients
   WiFiClient client = server.available();
   
@@ -52,8 +55,6 @@ void loop() {
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
-         //String req = client.readStringUntil('\r');
-         // Serial.println(req);
             if (c == '\n' && blank_line) {
             // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
             float h = dht.readHumidity();
@@ -78,26 +79,11 @@ void loop() {
               // You can delete the following Serial.print's, it's just for debugging purposes
               Serial.print("Humidity: ");
               Serial.print(h);
-              Serial.print(" %\t Temperature: ");
+              Serial.print("%");
+              Serial.println("");
+              Serial.print("Temperature: ");
               Serial.print(t);
               Serial.print(" *C ");
-              Serial.print(f);
-              Serial.print(" *F\t Heat index: ");
-              Serial.print(hic);
-              Serial.print(" *C ");
-              Serial.print(hif);
-              Serial.print(" *F");
-              Serial.print("Humidity: ");
-              Serial.print(h);
-              Serial.print(" %\t Temperature: ");
-              Serial.print(t);
-              Serial.print(" *C ");
-              Serial.print(f);
-              Serial.print(" *F\t Heat index: ");
-              Serial.print(hic);
-              Serial.print(" *C ");
-              Serial.print(hif);
-              Serial.println(" *F");
             }
             client.println("HTTP/1.1 200 OK");
             client.println("Content-Type: text/html");
@@ -113,9 +99,9 @@ void loop() {
             client.println("*F</h3><h3>Humidity: ");
             client.println(humidityTemp);
             client.println("%</h3><h3>");
-            //client.println("<form action='' method='get'>");
-            //client.println("<button name='' type='submit' value='led1'>Led on</button>");
-            //client.println("<button name='' type='submit' value='led0'>Led offn</button>");
+//            client.println("<form action='' method='get'>");
+//            client.println("<button name='' type='submit' value='led1'>Led on</button>");
+//            client.println("<button name='' type='submit' value='led0'>Led offn</button>");
             
 //        if (req.indexOf("led1") != -1)
 //          {
@@ -144,29 +130,17 @@ void loop() {
     // closing the client connection
     delay(1);
     client.stop();
-    Serial.println("Client disconnected.");
+    Serial.print("Client disconnected.");
   }
 }
+
 void setupWiFi()
 {
-  WiFi.mode(WIFI_AP);
-
-  // Do a little work to get a unique-ish name. Append the
-  // last two bytes of the MAC (HEX'd) to "Thing-":
-  uint8_t mac[WL_MAC_ADDR_LENGTH];
-  WiFi.softAPmacAddress(mac);
-  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-  macID.toUpperCase();
-  String AP_NameString = "ESP8266 Thing " + macID;
-
-  char AP_NameChar[AP_NameString.length() + 1];
-  memset(AP_NameChar, 0, AP_NameString.length() + 1);
-
-  for (int i=0; i<AP_NameString.length(); i++)
-    AP_NameChar[i] = AP_NameString.charAt(i);
-
-  WiFi.softAP(AP_NameChar, WiFiAPPSK);
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAPConfig(apIP,gateway, subnet);   // subnet FF FF FF 00  
+  WiFi.softAP(ssid,password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
 }
-
-
+}
